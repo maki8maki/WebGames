@@ -1,0 +1,15 @@
+:root {
+    --num: 0;
+    --height: 235px;
+    --offset: -37.5px;
+    --trans-y: -70px;
+    --scale: 0.25;
+}
+
+.cube {
+    height: var(--height);
+}
+
+.panel {
+    transform: translateY(calc(var(--trans-y) * var(--num) + var(--offset))) skewX(-45deg) scaleY(var(--scale));
+}

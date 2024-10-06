@@ -1,39 +1,27 @@
-"""Welcome to Reflex! This file outlines the steps to create a basic app."""
+from typing import List
 
 import reflex as rx
 
-from rxconfig import config
+from .style import APP_THEME, STYLESHEETS
+from .templates.template import template
 
 
-class State(rx.State):
-    """The app state."""
-
-    ...
-
-
-def index() -> rx.Component:
-    # Welcome Page (Index)
-    return rx.container(
-        rx.color_mode.button(position="top-right"),
+@rx.page(route="/", title="Web Games")
+@template(head_text="Welcome to My Web Games!", head_kwargs={"size": "9"})
+def index() -> List[rx.Component]:
+    return [
         rx.vstack(
-            rx.heading("Welcome to Reflex!", size="9"),
-            rx.text(
-                "Get started by editing ",
-                rx.code(f"{config.app_name}/{config.app_name}.py"),
-                size="5",
+            rx.vstack(
+                rx.text("Tic Tac Toe", size="7", weight="bold"),
+                rx.hstack(
+                    rx.image(src="/tictactoe/2d_tictactoe.png", height="100px"),
+                    rx.image(src="/tictactoe/3d_tictactoe.png", height="100px"),
+                ),
+                on_click=rx.redirect("/tictactoe"),
+                align="center",
             ),
-            rx.link(
-                rx.button("Check out our docs!"),
-                href="https://reflex.dev/docs/getting-started/introduction/",
-                is_external=True,
-            ),
-            spacing="5",
-            justify="center",
-            min_height="85vh",
-        ),
-        rx.logo(),
-    )
+        )
+    ]
 
 
-app = rx.App()
-app.add_page(index)
+app = rx.App(stylesheets=STYLESHEETS, theme=rx.theme(**APP_THEME))
