@@ -3,9 +3,9 @@ from typing import Dict, List
 
 import reflex as rx
 
-from ...style import THEME_BORDER
+from ...style import RESULT_TOAST, THEME_BORDER
 from ...templates.tictactoe import t3_pages
-from ..style import CHANGE_TURN_TOAST, RESULT_TOAST, STATE_COLOR
+from ..style import CHANGE_TURN_TOAST, STATE_COLOR
 from ..tictactoe import BitStrategicSelector, RandomSelector, Selector, SquareTicTacToe
 from .config import BOX_SIZE, DEFAULT_SIZE, SIZES
 

@@ -17,3 +17,10 @@ BOX_STYLE = {
 }
 
 BACK_COMPONENT_STYLE = "fixed bottom-4 right-4"
+
+RESULT_TOAST = {
+    "position": "top-center",
+    "duration": 5000,
+    "style": {"font-size": "20px"},
+    "close_button": True,
+}

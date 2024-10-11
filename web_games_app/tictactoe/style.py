@@ -6,13 +6,6 @@ STATE_COLOR = {
     3: "rgba(102,204,255)",
 }
 
-RESULT_TOAST = {
-    "position": "top-center",
-    "duration": 5000,
-    "style": {"font-size": "20px"},
-    "close_button": True,
-}
-
 CHANGE_TURN_TOAST = {
     "position": "top-center",
     "duration": 1500,
