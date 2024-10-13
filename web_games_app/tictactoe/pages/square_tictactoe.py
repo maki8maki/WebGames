@@ -186,7 +186,7 @@ def display_board():
     )
 
 
-@rx.page(route="/tictactoe/2d", title="Square Tic Tac Toe", on_load=[SquareTicTacToeState.initialize()])
+@rx.page(route="/tictactoe/2d", title="Play Square Tic Tac Toe", on_load=[SquareTicTacToeState.initialize()])
 @t3_pages(head_text="Square Tic Tac Toe")
 def square_t3_page() -> List[rx.Component]:
     return [setting(), turn_text(), display_board()]
