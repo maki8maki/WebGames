@@ -20,6 +20,12 @@ def index() -> List[rx.Component]:
                 on_click=rx.redirect("/tictactoe"),
                 align="center",
             ),
+            rx.vstack(
+                rx.text("Mine Sweaper", size="7", weight="bold"),
+                on_click=rx.redirect("/minesweaper"),
+                align="center",
+            ),
+            align="center",
         )
     ]
 
