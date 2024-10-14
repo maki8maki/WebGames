@@ -83,8 +83,8 @@ def render_box(state: int, index: int):
     return rx.box(
         get_box_content(state),
         bg=get_background_color(index),
-        width="30px",
-        height="30px",
+        width="25px",
+        height="25px",
         border=THEME_BORDER,
         on_click=MineSweaperState.open_cell(index),
         on_context_menu=MineSweaperState.put_or_unput_flag(index).prevent_default,
