@@ -30,7 +30,7 @@ class MineSweaperState(rx.State):
         self.width = width
         self.num_mines = num_mines
         self._game = MineSweaper(self.height, self.width, self.num_mines)
-        self.apply_game_state()
+        self.reset_board()
 
     def apply_game_state(self):
         self.showing_board = self._game.showing_board.flatten().tolist()
@@ -65,7 +65,8 @@ def setting():
 
 def get_box_content(state: int):
     return rx.cond(
-        (state != 0) & (state != NOT_SELECTED_NUM), rx.cond(state == FLAG_NUM, rx.text("F"), rx.text(state))
+        (state != 0) & (state != NOT_SELECTED_NUM),
+        rx.cond(state == FLAG_NUM, rx.image(src="/minesweaper/flag.png", width="20px"), rx.text(state)),
     )
 
 
