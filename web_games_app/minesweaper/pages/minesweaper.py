@@ -1,5 +1,6 @@
 from typing import List
 
+import numpy as np
 import reflex as rx
 
 from ...style import RESULT_TOAST, THEME_BORDER
@@ -15,6 +16,7 @@ class MineSweaperState(rx.State):
     showing_board: List[int]
     focused_idx: int = -1
     _is_game_end: bool = False
+    num_flags: int = 0
 
     # ** リセットなどの関数 **
     def on_load(self):
@@ -24,6 +26,7 @@ class MineSweaperState(rx.State):
         self._game.reset()
         self.apply_game_state()
         self._is_game_end = False
+        self.num_flags = 0
 
     def set_state(self, height: int, width: int, num_mines: int):
         self.height = height
@@ -34,6 +37,7 @@ class MineSweaperState(rx.State):
 
     def apply_game_state(self):
         self.showing_board = self._game.showing_board.flatten().tolist()
+        self.num_flags = np.count_nonzero(self._game.showing_board == FLAG_NUM)
 
     # ** マウスイベントに関する関数 **
     def open_cell(self, index: int):
@@ -60,7 +64,15 @@ class MineSweaperState(rx.State):
 
 
 def setting():
-    return rx.button("Reset", on_click=MineSweaperState.reset_board())
+    return rx.hstack(
+        rx.button("Reset", on_click=MineSweaperState.reset_board()),
+        rx.hstack(
+            rx.image(src="/minesweaper/flag.png", width="30px"),
+            rx.text(f"{MineSweaperState.num_flags} / {MineSweaperState.num_mines}"),
+            align="center",
+        ),
+        align="center",
+    )
 
 
 def get_box_content(state: int):
