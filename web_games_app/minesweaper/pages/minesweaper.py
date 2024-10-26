@@ -1,3 +1,4 @@
+import asyncio
 from typing import List
 
 import numpy as np
@@ -17,6 +18,8 @@ class MineSweaperState(rx.State):
     focused_idx: int = -1
     _is_game_end: bool = False
     num_flags: int = 0
+    elapsed_time: int = 0
+    _is_running: bool = False
 
     # ** リセットなどの関数 **
     def on_load(self):
@@ -27,6 +30,8 @@ class MineSweaperState(rx.State):
         self.apply_game_state()
         self._is_game_end = False
         self.num_flags = 0
+        self.elapsed_time = 0
+        self._is_running = False
 
     def set_state(self, height: int, width: int, num_mines: int):
         self.height = height
@@ -39,9 +44,21 @@ class MineSweaperState(rx.State):
         self.showing_board = self._game.showing_board.flatten().tolist()
         self.num_flags = np.count_nonzero(self._game.showing_board == FLAG_NUM)
 
+    @rx.background
+    async def update_elapsed_time(self):
+        if self._is_running:
+            return
+        while True:
+            await asyncio.sleep(1)
+            if self._is_game_end or not self._is_running:
+                break
+            async with self:
+                self.elapsed_time += 1
+
     # ** マウスイベントに関する関数 **
     def open_cell(self, index: int):
         if not self._is_game_end:
+            self._is_running = True
             is_fail = self._game.open_cell(index)
             self.apply_game_state()
             if not is_fail:
@@ -69,6 +86,11 @@ def display_info():
         rx.hstack(
             rx.image(src="/minesweaper/flag.png", width="30px"),
             rx.text(f"{MineSweaperState.num_flags} / {MineSweaperState.num_mines}"),
+            align="center",
+        ),
+        rx.hstack(
+            rx.image(src="/minesweaper/clock.png", width="30px"),
+            rx.text(f"{MineSweaperState.elapsed_time}"),
             align="center",
         ),
         align="center",
@@ -99,7 +121,7 @@ def render_box(state: int, index: int):
         width="25px",
         height="25px",
         border=THEME_BORDER,
-        on_click=MineSweaperState.open_cell(index),
+        on_click=[MineSweaperState.update_elapsed_time(), MineSweaperState.open_cell(index)],
         on_context_menu=MineSweaperState.put_or_unput_flag(index).prevent_default,
         on_mouse_enter=MineSweaperState.focus_cell(index),
         on_mouse_leave=MineSweaperState.unfocus_cell(),
