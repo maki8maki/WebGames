@@ -87,11 +87,13 @@ def display_info():
             rx.image(src="/minesweaper/flag.png", width="30px"),
             rx.text(f"{MineSweaperState.num_flags} / {MineSweaperState.num_mines}"),
             align="center",
+            spacing="0",
         ),
         rx.hstack(
             rx.image(src="/minesweaper/clock.png", width="30px"),
             rx.text(f"{MineSweaperState.elapsed_time}"),
             align="center",
+            spacing="1",
         ),
         align="center",
     )
