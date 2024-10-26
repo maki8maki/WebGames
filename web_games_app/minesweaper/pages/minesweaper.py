@@ -63,7 +63,7 @@ class MineSweaperState(rx.State):
         self.focused_idx = -1
 
 
-def setting():
+def display_info():
     return rx.hstack(
         rx.button("Reset", on_click=MineSweaperState.reset_board()),
         rx.hstack(
@@ -119,4 +119,4 @@ def display_board():
 @rx.page(route="/minesweaper/play", title="Play Mine Sweaper", on_load=MineSweaperState.on_load())
 @ms_pages(head_text="Mine Sweaper")
 def ms_page() -> List[rx.Component]:
-    return [setting(), display_board()]
+    return [display_info(), display_board()]
