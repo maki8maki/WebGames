@@ -30,6 +30,7 @@ s = [MINE_NUM, FLAG_NUM, NOT_SELECTED_NUM]
 assert len(set(s)) == len(s), (
     f"MINE_NUM (={MINE_NUM}), FLAG_NUM (={FLAG_NUM})" f" and NOT_SELECTED_NUM (={NOT_SELECTED_NUM}) must be differnt"
 )
+del s
 
 
 class MineSweaper:
