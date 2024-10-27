@@ -6,7 +6,25 @@ import reflex as rx
 
 from ...style import RESULT_TOAST, THEME_BORDER
 from ...templates.minesweaper import ms_pages
-from ..minesweaper.minesweaper import FLAG_NUM, NOT_SELECTED_NUM, MineSweaper
+from ..minesweaper.minesweaper import (
+    FLAG_NUM,
+    MINE_NUM,
+    NOT_SELECTED_NUM,
+    MineSweaper,
+    check_state_num,
+)
+
+NOT_SELECTED_MINE_NUM = -10
+FAILED_FLAG_NUM = -11
+assert check_state_num(NOT_SELECTED_MINE_NUM), f"NOT_SELECTED_MINE_NUM (={NOT_SELECTED_MINE_NUM}) is invalid number"
+assert check_state_num(FAILED_FLAG_NUM), f"FAILED_FLAG_NUM (={FAILED_FLAG_NUM}) is invalid number"
+s = [MINE_NUM, FLAG_NUM, NOT_SELECTED_NUM, NOT_SELECTED_MINE_NUM, FAILED_FLAG_NUM]
+assert len(set(s)) == len(s), (
+    f"MINE_NUM (={MINE_NUM}), FLAG_NUM (={FLAG_NUM})"
+    f", NOT_SELECTED_NUM (={NOT_SELECTED_NUM}), NOT_SELECTED_MINE_NUM (={NOT_SELECTED_MINE_NUM})"
+    f" and FAILED_FLAG_NUM (={FAILED_FLAG_NUM}) must be differnt"
+)
+del s
 
 
 class MineSweaperState(rx.State):
@@ -43,6 +61,13 @@ class MineSweaperState(rx.State):
     def apply_game_state(self):
         self.showing_board = self._game.showing_board.flatten().tolist()
         self.num_flags = np.count_nonzero(self._game.showing_board == FLAG_NUM)
+        if self._is_game_end:
+            actual = self._game.actual_board.flatten().tolist()
+            for i in range(len(self.showing_board)):
+                if actual[i] == MINE_NUM and self.showing_board[i] == NOT_SELECTED_NUM:
+                    self.showing_board[i] = NOT_SELECTED_MINE_NUM
+                elif self.showing_board[i] == FLAG_NUM and 0 <= actual[i] <= 8:
+                    self.showing_board[i] = FAILED_FLAG_NUM
 
     @rx.background
     async def update_elapsed_time(self):
@@ -103,23 +128,38 @@ def display_info():
 def get_box_content(state: int):
     return rx.cond(
         (state != 0) & (state != NOT_SELECTED_NUM),
-        rx.cond(state == FLAG_NUM, rx.image(src="/minesweaper/flag.png", width="20px"), rx.text(state)),
+        rx.cond(
+            (state == FLAG_NUM) | (state == FAILED_FLAG_NUM),
+            rx.image(src="/minesweaper/flag.png", width="20px"),
+            rx.cond(
+                state == NOT_SELECTED_MINE_NUM,
+                rx.image(src="/minesweaper/mine.png", width="20px"),
+                rx.text(state),
+            ),
+        ),
     )
 
 
 def get_background_color(index: int):
     return rx.cond(
         (MineSweaperState.showing_board[index] != NOT_SELECTED_NUM)
-        & (MineSweaperState.showing_board[index] != FLAG_NUM),
+        & (MineSweaperState.showing_board[index] != FLAG_NUM)
+        & (MineSweaperState.showing_board[index] != FAILED_FLAG_NUM)
+        & (MineSweaperState.showing_board[index] != NOT_SELECTED_MINE_NUM),
         "var(--gray-2)",
-        rx.cond(MineSweaperState.focused_idx == index, "var(--gray-5)", "var(--gray-9)"),
+        rx.cond(
+            (MineSweaperState.showing_board[index] == FAILED_FLAG_NUM)
+            | (MineSweaperState.showing_board[index] == NOT_SELECTED_MINE_NUM),
+            "var(--red-7)",
+            rx.cond(MineSweaperState.focused_idx == index, "var(--gray-5)", "var(--gray-9)"),
+        ),
     )
     # return rx.cond(MineSweaperState.focused_idx == index, rx.color("gray", shade=3), rx.color("gray", shade=7))
 
 
 def render_box(state: int, index: int):
     return rx.box(
-        get_box_content(state),
+        rx.center(get_box_content(state)),
         bg=get_background_color(index),
         width="25px",
         height="25px",
