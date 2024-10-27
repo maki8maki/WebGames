@@ -26,6 +26,8 @@ assert len(set(s)) == len(s), (
 )
 del s
 
+TIME_ZFILL = 3
+
 
 class MineSweaperState(rx.State):
     height: int = 8
@@ -36,7 +38,8 @@ class MineSweaperState(rx.State):
     focused_idx: int = -1
     _is_game_end: bool = False
     num_flags: int = 0
-    elapsed_time: int = 0
+    _elapsed_time: int = 0
+    display_elapsed_time: str = str(_elapsed_time).zfill(TIME_ZFILL)
     _is_running: bool = False
 
     # ** リセットなどの関数 **
@@ -48,7 +51,8 @@ class MineSweaperState(rx.State):
         self.apply_game_state()
         self._is_game_end = False
         self.num_flags = 0
-        self.elapsed_time = 0
+        self._elapsed_time = 0
+        self.display_elapsed_time = str(self._elapsed_time).zfill(TIME_ZFILL)
         self._is_running = False
 
     def set_state(self, height: int, width: int, num_mines: int):
@@ -78,7 +82,8 @@ class MineSweaperState(rx.State):
             if self._is_game_end or not self._is_running:
                 break
             async with self:
-                self.elapsed_time += 1
+                self._elapsed_time += 1
+                self.display_elapsed_time = str(self._elapsed_time).zfill(TIME_ZFILL)
 
     # ** マウスイベントに関する関数 **
     def open_cell(self, index: int):
@@ -111,13 +116,18 @@ def display_info():
         rx.button("Reset", on_click=MineSweaperState.reset_board()),
         rx.hstack(
             rx.image(src="/minesweaper/flag.png", width="30px"),
-            rx.text(f"{MineSweaperState.num_flags} / {MineSweaperState.num_mines}"),
+            rx.text(
+                f"{MineSweaperState.num_flags} / {MineSweaperState.num_mines}",
+                font_family="Open Sans",
+                size="4",
+                weight="medium",
+            ),
             align="center",
-            spacing="0",
+            spacing="1",
         ),
         rx.hstack(
             rx.image(src="/minesweaper/clock.png", width="30px"),
-            rx.text(f"{MineSweaperState.elapsed_time}"),
+            rx.text(MineSweaperState.display_elapsed_time, font_family="Instrument Sans", size="4", weight="medium"),
             align="center",
             spacing="1",
         ),
