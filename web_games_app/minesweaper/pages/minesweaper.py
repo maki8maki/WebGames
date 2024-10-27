@@ -59,13 +59,13 @@ class MineSweaperState(rx.State):
     def open_cell(self, index: int):
         if not self._is_game_end:
             self._is_running = True
-            is_fail = self._game.open_cell(index)
-            self.apply_game_state()
-            if not is_fail:
+            is_not_fail = self._game.open_cell(index)
+            if not is_not_fail or self._game.is_all_selected():
                 self._is_game_end = True
+            self.apply_game_state()
+            if not is_not_fail:
                 return rx.toast.error("You failed...", **RESULT_TOAST)
             elif self._game.is_all_selected():
-                self._is_game_end = True
                 return rx.toast.success("You succeeded!!", **RESULT_TOAST)
 
     def put_or_unput_flag(self, index: int):
@@ -74,7 +74,8 @@ class MineSweaperState(rx.State):
             self.apply_game_state()
 
     def focus_cell(self, index: int):
-        self.focused_idx = index
+        if not self._is_game_end:
+            self.focused_idx = index
 
     def unfocus_cell(self):
         self.focused_idx = -1
