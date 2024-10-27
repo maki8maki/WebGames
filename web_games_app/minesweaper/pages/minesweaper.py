@@ -118,7 +118,7 @@ def display_info():
             rx.image(src="/minesweaper/flag.png", width="30px"),
             rx.text(
                 f"{MineSweaperState.num_flags} / {MineSweaperState.num_mines}",
-                font_family="Open Sans",
+                font_family="Instrument Sans",
                 size="4",
                 weight="medium",
             ),
