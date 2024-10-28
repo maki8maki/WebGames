@@ -62,10 +62,10 @@ class MineSweaperState(rx.State):
         self._game = MineSweaper(self.height, self.width, self.num_mines)
         self.reset_board()
 
-    def apply_game_state(self):
+    def apply_game_state(self, is_fail=False):
         self.showing_board = self._game.showing_board.flatten().tolist()
         self.num_flags = np.count_nonzero(self._game.showing_board == FLAG_NUM)
-        if self._is_game_end:
+        if is_fail:
             actual = self._game.actual_board.flatten().tolist()
             for i in range(len(self.showing_board)):
                 if actual[i] == MINE_NUM and self.showing_board[i] == NOT_SELECTED_NUM:
@@ -92,7 +92,7 @@ class MineSweaperState(rx.State):
             is_not_fail = self._game.open_cell(index)
             if not is_not_fail or self._game.is_all_selected():
                 self._is_game_end = True
-            self.apply_game_state()
+            self.apply_game_state(not is_not_fail)
             if not is_not_fail:
                 return rx.toast.error("You failed...", **RESULT_TOAST)
             elif self._game.is_all_selected():
