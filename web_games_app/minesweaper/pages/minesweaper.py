@@ -114,22 +114,30 @@ class MineSweaperState(rx.State):
 def display_info():
     return rx.hstack(
         rx.button("Reset", on_click=MineSweaperState.reset_board()),
-        rx.hstack(
-            rx.image(src="/minesweaper/flag.png", width="30px"),
-            rx.text(
-                f"{MineSweaperState.num_flags} / {MineSweaperState.num_mines}",
-                font_family="Instrument Sans",
-                size="4",
-                weight="medium",
+        rx.box(
+            rx.hstack(
+                rx.image(src="/minesweaper/flag.png", width="30px"),
+                rx.text(
+                    f"{MineSweaperState.num_flags} / {MineSweaperState.num_mines}",
+                    font_family="Instrument Sans",
+                    size="4",
+                    weight="medium",
+                ),
+                align="center",
+                spacing="1",
             ),
-            align="center",
-            spacing="1",
+            width="95px",
         ),
-        rx.hstack(
-            rx.image(src="/minesweaper/clock.png", width="30px"),
-            rx.text(MineSweaperState.display_elapsed_time, font_family="Instrument Sans", size="4", weight="medium"),
-            align="center",
-            spacing="1",
+        rx.box(
+            rx.hstack(
+                rx.image(src="/minesweaper/clock.png", width="30px"),
+                rx.text(
+                    MineSweaperState.display_elapsed_time, font_family="Instrument Sans", size="4", weight="medium"
+                ),
+                align="center",
+                spacing="1",
+            ),
+            width="70px",
         ),
         align="center",
     )
