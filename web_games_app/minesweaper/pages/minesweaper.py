@@ -26,8 +26,6 @@ assert len(set(s)) == len(s), (
 )
 del s
 
-TIME_ZFILL = 3
-
 
 class MineSweaperState(rx.State):
     height: int = 8
@@ -39,7 +37,6 @@ class MineSweaperState(rx.State):
     _is_game_end: bool = False
     num_flags: int = 0
     _elapsed_time: int = 0
-    display_elapsed_time: str = str(_elapsed_time).zfill(TIME_ZFILL)
     _is_running: bool = False
 
     # ** リセットなどの関数 **
@@ -52,7 +49,6 @@ class MineSweaperState(rx.State):
         self._is_game_end = False
         self.num_flags = 0
         self._elapsed_time = 0
-        self.display_elapsed_time = str(self._elapsed_time).zfill(TIME_ZFILL)
         self._is_running = False
 
     def set_state(self, height: int, width: int, num_mines: int):
@@ -73,6 +69,7 @@ class MineSweaperState(rx.State):
                 elif self.showing_board[i] == FLAG_NUM and 0 <= actual[i] <= 8:
                     self.showing_board[i] = FAILED_FLAG_NUM
 
+    # ** 経過時間に関する関数 **
     @rx.background
     async def update_elapsed_time(self):
         if self._is_running:
@@ -83,7 +80,10 @@ class MineSweaperState(rx.State):
                 break
             async with self:
                 self._elapsed_time += 1
-                self.display_elapsed_time = str(self._elapsed_time).zfill(TIME_ZFILL)
+
+    @rx.var(cache=True)
+    def display_elapsed_time(self):
+        return str(self._elapsed_time).zfill(3)
 
     # ** マウスイベントに関する関数 **
     def open_cell(self, index: int):
