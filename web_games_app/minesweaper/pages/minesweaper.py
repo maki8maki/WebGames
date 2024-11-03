@@ -164,15 +164,14 @@ def get_background_color(index: int):
         & (MineSweaperState.showing_board[index] != FLAG_NUM)
         & (MineSweaperState.showing_board[index] != FAILED_FLAG_NUM)
         & (MineSweaperState.showing_board[index] != NOT_SELECTED_MINE_NUM),
-        "var(--gray-2)",
+        rx.color("gray", shade=2),
         rx.cond(
             (MineSweaperState.showing_board[index] == FAILED_FLAG_NUM)
             | (MineSweaperState.showing_board[index] == NOT_SELECTED_MINE_NUM),
-            "var(--red-7)",
-            rx.cond(MineSweaperState.focused_idx == index, "var(--gray-5)", "var(--gray-9)"),
+            rx.color("red", shade=7),
+            rx.cond(MineSweaperState.focused_idx == index, rx.color("gray", shade=5), rx.color("gray", shade=9)),
         ),
     )
-    # return rx.cond(MineSweaperState.focused_idx == index, rx.color("gray", shade=3), rx.color("gray", shade=7))
 
 
 def render_box(state: int, index: int):
