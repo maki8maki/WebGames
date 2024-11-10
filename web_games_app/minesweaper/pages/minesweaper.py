@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 import reflex as rx
 
-from ...style import RESULT_TOAST, THEME_BORDER
+from ...style import RESULT_TOAST, THEME_BORDER, THEME_BORDER_DOUBLE
 from ...templates.minesweaper import ms_pages
 from ..minesweaper.minesweaper import (
     FLAG_NUM,
@@ -26,6 +26,8 @@ assert len(set(s)) == len(s), (
 )
 del s
 
+BOX_SIZE = 25
+
 
 class MineSweaperState(rx.State):
     height: int = 8
@@ -38,6 +40,7 @@ class MineSweaperState(rx.State):
     num_flags: int = 0
     _elapsed_time: int = 0
     _is_running: bool = False
+    posing: bool = False
 
     # ** リセットなどの関数 **
     def on_load(self):
@@ -50,6 +53,7 @@ class MineSweaperState(rx.State):
         self.num_flags = 0
         self._elapsed_time = 0
         self._is_running = False
+        self.posing = False
 
     def set_state(self, height: int, width: int, num_mines: int):
         self.height = height
@@ -78,6 +82,8 @@ class MineSweaperState(rx.State):
             await asyncio.sleep(1)
             if self._is_game_end or not self._is_running:
                 break
+            elif self.posing:
+                continue
             async with self:
                 self._elapsed_time += 1
 
@@ -110,10 +116,14 @@ class MineSweaperState(rx.State):
     def unfocus_cell(self):
         self.focused_idx = -1
 
+    def change_pose_state(self):
+        self.posing = not self.posing
+
 
 def display_info():
     return rx.hstack(
         rx.button("Reset", on_click=MineSweaperState.reset_board()),
+        rx.button("Pose", on_click=MineSweaperState.change_pose_state()),
         rx.box(
             rx.hstack(
                 rx.image(src="/minesweaper/flag.png", width="30px"),
@@ -178,8 +188,8 @@ def render_box(state: int, index: int):
     return rx.box(
         rx.center(get_box_content(state)),
         bg=get_background_color(index),
-        width="25px",
-        height="25px",
+        width=f"{BOX_SIZE}px",
+        height=f"{BOX_SIZE}px",
         border=THEME_BORDER,
         on_click=[MineSweaperState.update_elapsed_time(), MineSweaperState.open_cell(index)],
         on_context_menu=MineSweaperState.put_or_unput_flag(index).prevent_default,
@@ -190,11 +200,22 @@ def render_box(state: int, index: int):
 
 
 def display_board():
-    return rx.grid(
-        rx.foreach(MineSweaperState.showing_board, lambda state, index: render_box(state, index)),
-        columns=MineSweaperState.width.to_string(),
-        border=THEME_BORDER,
-        justify="center",
+    return rx.cond(
+        MineSweaperState.posing,
+        rx.box(
+            rx.text("\n\nPosed", size="4", weight="bold", white_space="pre"),
+            bg=rx.color("gray", shade=6),
+            border=THEME_BORDER_DOUBLE,
+            text_align="center",
+            width=f"{BOX_SIZE*MineSweaperState.width}px",
+            height=f"{BOX_SIZE*MineSweaperState.height+2}px",
+        ),
+        rx.grid(
+            rx.foreach(MineSweaperState.showing_board, lambda state, index: render_box(state, index)),
+            columns=MineSweaperState.width.to_string(),
+            border=THEME_BORDER,
+            justify="center",
+        ),
     )
 
 

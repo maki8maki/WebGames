@@ -8,6 +8,7 @@ APP_THEME = {
 STYLESHEETS = ["tictactoe.css"]
 
 THEME_BORDER = f"1px solid {rx.color('gray', 12)}"
+THEME_BORDER_DOUBLE = f"2px solid {rx.color('gray', 12)}"
 
 BOX_STYLE = {
     "border": THEME_BORDER,
