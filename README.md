@@ -2,7 +2,7 @@
 
 This project made by [Reflex](https://reflex.dev/).
 
-If you want to play, access [here](https://tictactoe-app.reflex.run).
+If you want to play, access [here](https://web_games_app-blue-moon.reflex.run).
 
 ## How to use in local
 

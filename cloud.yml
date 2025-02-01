@@ -1,0 +1,10 @@
+name: default
+description: 'You can play Web Games.'
+regions:
+  nrt: 1
+vmtype: c1m1
+hostname: null
+envfile: .env
+project: null
+packages:
+- procps
