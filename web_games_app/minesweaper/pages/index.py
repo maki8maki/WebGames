@@ -8,6 +8,7 @@ from .minesweaper import MineSweaperState
 
 CUSTOM_BOX_STYLE = BOX_STYLE.copy()
 CUSTOM_BOX_STYLE.update({"padding": "0em"})
+COMPONENT_WIDTH = "200px"
 
 
 def difficulty_component(text: str, height: int, width: int, num_mines: int):
@@ -21,7 +22,7 @@ def difficulty_component(text: str, height: int, width: int, num_mines: int):
         ),
         on_click=[MineSweaperState.set_state(height, width, num_mines), rx.redirect("/minesweaper/play")],
         style=CUSTOM_BOX_STYLE,
-        width="200px",
+        width=COMPONENT_WIDTH,
     )
 
 
@@ -30,7 +31,17 @@ def custom_component():
         rx.text("\nCustom\n\n", weight="bold", white_space="pre"),
         on_click=rx.redirect("/minesweaper/custom"),
         style=CUSTOM_BOX_STYLE,
-        width="200px",
+        width=COMPONENT_WIDTH,
+        text_align="center",
+    )
+
+
+def record_component():
+    return rx.box(
+        rx.text("\nRecords\n\n", weight="bold", white_space="pre"),
+        on_click=rx.redirect("/minesweaper/records"),
+        style=CUSTOM_BOX_STYLE,
+        width=COMPONENT_WIDTH,
         text_align="center",
     )
 
@@ -44,6 +55,7 @@ def ms_index() -> List[rx.Component]:
             difficulty_component("Intermediate", 14, 18, 40),
             difficulty_component("Expert", 20, 24, 99),
             custom_component(),
+            record_component(),
             align="center",
         )
     ]

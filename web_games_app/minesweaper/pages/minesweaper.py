@@ -13,6 +13,7 @@ from ..minesweaper.minesweaper import (
     MineSweaper,
     check_state_num,
 )
+from .record import MSRecord, MSRecordState, to_state
 
 NOT_SELECTED_MINE_NUM = -10
 FAILED_FLAG_NUM = -11
@@ -38,9 +39,10 @@ class MineSweaperState(rx.State):
     focused_idx: int = -1
     _is_game_end: bool = False
     num_flags: int = 0
-    _elapsed_time: int = 0
+    elapsed_time: int = 0
     _is_running: bool = False
     posing: bool = False
+    is_popup: bool = False
 
     # ** リセットなどの関数 **
     def on_load(self):
@@ -51,9 +53,10 @@ class MineSweaperState(rx.State):
         self.apply_game_state()
         self._is_game_end = False
         self.num_flags = 0
-        self._elapsed_time = 0
+        self.elapsed_time = 0
         self._is_running = False
         self.posing = False
+        self.is_popup = False
 
     def set_state(self, height: int, width: int, num_mines: int):
         self.height = height
@@ -73,6 +76,33 @@ class MineSweaperState(rx.State):
                 elif self.showing_board[i] == FLAG_NUM and 0 <= actual[i] <= 8:
                     self.showing_board[i] = FAILED_FLAG_NUM
 
+    # ** 記録に関する関数 **
+    def update_record(self) -> int:
+        state = to_state(height=self.height, width=self.width, num_mines=self.num_mines)
+        with rx.session() as session:
+            session.add(MSRecord(state=state, time=self.elapsed_time))
+            session.commit()
+
+            records = session.exec(
+                MSRecord.select().where(MSRecord.state == state).order_by(MSRecord.time.asc())
+            ).all()
+            for i in range(10, len(records)):
+                session.delete(records[i])
+                session.commit()
+
+    @rx.var
+    def best_time(self) -> int:
+        state = to_state(height=self.height, width=self.width, num_mines=self.num_mines)
+        with rx.session() as session:
+            records = session.exec(
+                MSRecord.select().where(MSRecord.state == state).order_by(MSRecord.time.asc())
+            ).all()
+
+        if len(records):
+            return records[0].time
+        else:
+            return 0
+
     # ** 経過時間に関する関数 **
     @rx.background
     async def update_elapsed_time(self):
@@ -85,11 +115,11 @@ class MineSweaperState(rx.State):
             elif self.posing:
                 continue
             async with self:
-                self._elapsed_time += 1
+                self.elapsed_time += 1
 
     @rx.var(cache=True)
     def display_elapsed_time(self):
-        return str(self._elapsed_time).zfill(3)
+        return str(self.elapsed_time).zfill(3)
 
     # ** マウスイベントに関する関数 **
     def open_cell(self, index: int):
@@ -102,6 +132,8 @@ class MineSweaperState(rx.State):
             if not is_not_fail:
                 return rx.toast.error("You failed...", **RESULT_TOAST)
             elif self._game.is_all_selected():
+                self.update_record()
+                self.is_popup = True
                 return rx.toast.success("You succeeded!!", **RESULT_TOAST)
 
     def put_or_unput_flag(self, index: int):
@@ -121,35 +153,83 @@ class MineSweaperState(rx.State):
 
 
 def display_info():
-    return rx.hstack(
-        rx.button("Reset", on_click=MineSweaperState.reset_board()),
-        rx.button("Pose", on_click=MineSweaperState.change_pose_state()),
-        rx.box(
-            rx.hstack(
-                rx.image(src="/minesweaper/flag.png", width="30px"),
-                rx.text(
-                    f"{MineSweaperState.num_flags} / {MineSweaperState.num_mines}",
-                    font_family="Instrument Sans",
-                    size="4",
-                    weight="medium",
-                ),
-                align="center",
-                spacing="1",
+    return rx.vstack(
+        rx.hstack(
+            rx.button("Reset", on_click=MineSweaperState.reset_board()),
+            rx.button("Pose", on_click=MineSweaperState.change_pose_state()),
+            rx.button(
+                "Records",
+                on_click=[
+                    rx.redirect("/minesweaper/records"),
+                    MSRecordState.set_state(
+                        to_state(MineSweaperState.height, MineSweaperState.width, MineSweaperState.num_mines)
+                    ),
+                ],
             ),
-            width="95px",
+            align="center",
         ),
-        rx.box(
-            rx.hstack(
-                rx.image(src="/minesweaper/clock.png", width="30px"),
-                rx.text(
-                    MineSweaperState.display_elapsed_time, font_family="Instrument Sans", size="4", weight="medium"
+        rx.hstack(
+            rx.box(
+                rx.hstack(
+                    rx.image(src="/minesweaper/flag.png", width="30px"),
+                    rx.text(
+                        f"{MineSweaperState.num_flags} / {MineSweaperState.num_mines}",
+                        font_family="Instrument Sans",
+                        size="4",
+                        weight="medium",
+                    ),
+                    align="center",
+                    spacing="1",
                 ),
-                align="center",
-                spacing="1",
+                width="95px",
             ),
-            width="70px",
+            rx.box(
+                rx.hstack(
+                    rx.image(src="/minesweaper/clock.png", width="30px"),
+                    rx.text(
+                        MineSweaperState.display_elapsed_time, font_family="Instrument Sans", size="4", weight="medium"
+                    ),
+                    align="center",
+                    spacing="1",
+                ),
+                width="70px",
+            ),
+            align="center",
         ),
         align="center",
+    )
+
+
+def popup_dialog():
+    return rx.dialog.root(
+        rx.dialog.trigger(
+            rx.box(),
+        ),
+        rx.dialog.content(
+            rx.flex(
+                rx.text(f"Your Time: {MineSweaperState.elapsed_time}"),
+                rx.text(f"Best Time: {MineSweaperState.best_time}"),
+                rx.button(
+                    "Show Records",
+                    width="150px",
+                    on_click=[
+                        rx.redirect("/minesweaper/records"),
+                        MSRecordState.set_state(
+                            to_state(MineSweaperState.height, MineSweaperState.width, MineSweaperState.num_mines)
+                        ),
+                    ],
+                ),
+                rx.dialog.close(
+                    rx.button("Close", variant="soft", color_scheme="gray", width="150px"),
+                    on_click=MineSweaperState.set_is_popup(False),
+                ),
+                direction="column",
+                spacing="3",
+                align="center",
+            ),
+            width="250px",
+        ),
+        open=MineSweaperState.is_popup,
     )
 
 
@@ -222,4 +302,4 @@ def display_board():
 @rx.page(route="/minesweaper/play", title="Play Mine Sweaper", on_load=MineSweaperState.on_load())
 @ms_pages(head_text="Mine Sweaper")
 def ms_page() -> List[rx.Component]:
-    return [display_info(), display_board()]
+    return [display_info(), display_board(), popup_dialog()]
