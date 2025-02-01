@@ -22,6 +22,7 @@ def index() -> List[rx.Component]:
             ),
             rx.vstack(
                 rx.text("Mine Sweaper", size="7", weight="bold"),
+                rx.image(src="/minesweaper/minesweaper.png", height="150px"),
                 on_click=rx.redirect("/minesweaper"),
                 align="center",
             ),
