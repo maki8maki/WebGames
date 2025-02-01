@@ -19,7 +19,7 @@ class MSRecord(rx.Model, table=True):
 class MSRecordState(rx.State):
     state: str = to_state(8, 10, 10)
 
-    @rx.var
+    @rx.var(cache=False)
     def data(self) -> List[List[int]]:
         with rx.session() as session:
             records = session.exec(
@@ -37,7 +37,7 @@ class MSRecordState(rx.State):
 
         return data
 
-    @rx.var
+    @rx.var(cache=False)
     def states(self) -> List[str]:
         with rx.session() as session:
             return session.exec(

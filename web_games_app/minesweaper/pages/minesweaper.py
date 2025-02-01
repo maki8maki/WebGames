@@ -90,7 +90,7 @@ class MineSweaperState(rx.State):
                 session.delete(records[i])
                 session.commit()
 
-    @rx.var
+    @rx.var(cache=False)
     def best_time(self) -> int:
         state = to_state(height=self.height, width=self.width, num_mines=self.num_mines)
         with rx.session() as session:
@@ -104,7 +104,7 @@ class MineSweaperState(rx.State):
             return 0
 
     # ** 経過時間に関する関数 **
-    @rx.background
+    @rx.event(background=True)
     async def update_elapsed_time(self):
         if self._is_running:
             return
@@ -118,7 +118,7 @@ class MineSweaperState(rx.State):
                 self.elapsed_time += 1
 
     @rx.var(cache=True)
-    def display_elapsed_time(self):
+    def display_elapsed_time(self) -> str:
         return str(self.elapsed_time).zfill(3)
 
     # ** マウスイベントに関する関数 **
